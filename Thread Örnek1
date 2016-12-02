@@ -1,0 +1,140 @@
+
+public class TestThread {
+
+	public static void main(String[] args) {
+		System.out.print("İfade Giriniz: ");
+		Thread mainThread = new Thread(new MainThread());
+		mainThread.start();
+		
+		try {
+    
+			mainThread.join();
+      
+		} catch (InterruptedException e){
+	
+			e.printStackTrace();
+		}
+	}
+}
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+public class MainThread implements Runnable { //MainThreads  kullanıcıdan bir string alır ve bu stringi FirstThreads'e yollar.
+
+	@Override
+	public void run() {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		
+		String str= null;
+		
+		try {
+			str=br.readLine();
+		}
+		catch (IOException e) {
+			System.out.println("Error!");
+			System.exit(1);
+		}
+		
+		System.out.println("Girdiğiniz İfade: "+str );
+		
+		Mesaj mesaj=new Mesaj(str); 
+		
+		Thread firstThread=new Thread(new FırstThread(mesaj));
+		
+		  firstThread.start();
+
+          try {
+                firstThread.join();
+
+          } catch (InterruptedException e) {
+
+                e.printStackTrace();
+          }
+
+          System.out.println("Thread Çıktısı="+mesaj.getMesaj());   
+	}
+}
+
+public class Mesaj { //Aktarılan string call by reference özelliğini sağlamak amacıyla bu aktarım Mesaj sınıfı yardımıyla yapılır.
+
+	  String mesaj;
+	
+      public Mesaj(String mesaj) {
+    	  
+            this.mesaj = mesaj;
+      }
+      public String getMesaj() {
+
+          return mesaj;
+    }
+      public void setMesaj(String mesaj) {
+
+          this.mesaj = mesaj;
+    }
+}
+
+public class FırstThread implements Runnable{//Firsthreads aldığı stringdeki büyük harfleri küçük harflere ,
+                                             //küçük harfleri ise büyük harflere çevirir ve oluşan stringi SecondThreads'a yollar
+      
+	Mesaj mesaj;
+	public FırstThread(Mesaj m){
+		
+			this.mesaj=m;		
+		}
+	@Override
+	public void run() {
+		
+		 char [] array=mesaj.getMesaj().toCharArray();
+		 String sonuc="";
+		 
+		 for(int i=0; i<=mesaj.getMesaj().length()-1; i++)
+         {
+			 if(Character.isLowerCase(array[i]))
+             {
+                   sonuc+=Character.toUpperCase(array[i]);
+             }
+             else
+             {
+                   sonuc+=Character.toLowerCase(array[i]);
+             }
+			 
+       }
+		 System.out.println("FırstThread çıktısı: "+sonuc);
+		   mesaj.setMesaj(sonuc);
+		   
+		   Thread secondThread=new Thread(new SecondThread(mesaj));
+           secondThread.start();
+           
+           try {
+               secondThread.join();
+
+         } catch (InterruptedException e) {
+               e.printStackTrace();
+         }
+	  }
+}
+
+public class SecondThread implements Runnable{ //SecondThreads ise stringi tersine çevirir ve
+                                               //sonuç olarak eğer girdimiz "Hello World" ise çıktımızın "DLROw OLLEh" olması gerekir.
+
+	 Mesaj mesaj;
+
+     public SecondThread(Mesaj m) {
+           this.mesaj=m;
+     }
+	@Override
+	public void run() {
+		
+		 char [] array=mesaj.getMesaj().toCharArray();
+         String sonuc="";
+         
+         for(int i=mesaj.getMesaj().length()-1;i>=0;i--)
+         {
+               sonuc +=array[i];
+         }                 
+         mesaj.setMesaj(sonuc);
+         System.out.println("SecondThread çıktısı: "+sonuc);
+	}
+}
